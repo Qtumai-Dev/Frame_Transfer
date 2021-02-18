@@ -18,6 +18,8 @@ frame_recv.py
 포트 50001 오픈/Listen
 릴레이서버에서 보낸 파일을 받아 imshow로 출력
 
+config.txt
+dvr 정보 
 
 ### threading 추가 필요
 ### 실행파일 강제종료시 / 전원 off시 / 네트워크 끊겼을때 재접속시 이어진 시간 + 이어지는 프레임 전송필요
