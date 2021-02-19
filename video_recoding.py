@@ -14,12 +14,15 @@ import platform
 
 class video_recode(threading.Thread):
     
-    def __init__(self, dvr_num, dvr_ip, dvr_ch):
+    def __init__(self, dvr_num, dvr_ip, dvr_ch, open_t, close_t):
         threading.Thread.__init__(self, name = str(dvr_num) + '_' + str(dvr_ch))
         #self.name = str(dvr_num) + str(dvr_ch)
         self.dvr_num = dvr_num
         self.dvr_ip = dvr_ip
         self.dvr_ch = dvr_ch
+        self.open_t = open_t
+        self.close_t = close_t
+        
         
         o_sys = platform.system()
         if o_sys == 'Windows':
@@ -79,9 +82,9 @@ class video_recode(threading.Thread):
     # 운영 시간 설정 필!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def working_hours(self):
         now_t = datetime.datetime.now()
-        open_t = datetime.datetime(now_t.year, now_t.month, now_t.day, 10,0,0)
-        close_t = datetime.datetime(now_t.year, now_t.month, now_t.day, 11,0,0)
-        
+        open_t = datetime.datetime(now_t.year, now_t.month, now_t.day, self.open_t[0], self.open_t[1], 0)
+        close_t = datetime.datetime(now_t.year, now_t.month, now_t.day, self.close_t[0], self.close_t[1], 0)
+        self.shutdown = close_t.strftime('%H%M')
         if open_t < now_t:
             if close_t > now_t:
                 return True
@@ -91,8 +94,6 @@ class video_recode(threading.Thread):
     # 녹화 시작 로그작성        
     def start_log(self, v_file_name):
         self.recode_log = pd.read_csv(self.log_path)
-        
-        print(self.recode_log)
         idx = self.log_len()   
         self.recode_log.loc[idx] = [self.log_time(), self.dvr_num, self.dvr_ch, v_file_name, 'rec_start', None, None, None]
         self.recode_log.to_csv(self.log_path, index = False)
@@ -170,7 +171,7 @@ class video_recode(threading.Thread):
         
         # 저장 파일 세팅
         v_file_name = str(self.log_time().strftime('%H%M'))
-        video_file = os.path.join(self.name, v_file_name + "_raw.avi")
+        video_file = os.path.join(self.name, v_file_name + ".avi")
         video_writer = cv2.VideoWriter(video_file, self.video_codec, self.fps, (self.wid, self.hei))
         
         try:
@@ -182,21 +183,20 @@ class video_recode(threading.Thread):
             while cap.isOpened():
                 self.fr_count += 1
                 self.start_time.append(datetime.datetime.now())
-                
                 ret, frame = cap.read()
                 
                 # 캡쳐 됨
                 if ret == True:
-                        
                     # 영업시간 종료시간파일까지 녹화 되면 종료 ---- 시간확인!!!!!!!!!!!!! 
                     # 영상 저장 파일 이름 = HHMM
-                    if v_file_name == '1102':
+                    if v_file_name == self.shutdown:
+                        print('now is not working hour')
                         break
                     
                     # 녹화길이 설정 / 900frame 1분 / 15fps
                     if self.fr_count == 900:
                         v_file_name = self.log_time().strftime('%H%M')
-                        video_file = os.path.join(self.name, v_file_name + "_raw.avi")
+                        video_file = os.path.join(self.name, v_file_name + ".avi")
                         print("Capture video saved location : {}".format(video_file))
                         video_writer = cv2.VideoWriter(video_file, self.video_codec, self.fps, (self.wid, self.hei))
                         
@@ -276,10 +276,12 @@ if __name__ == '__main__':
         return dvr_num, dvr_ip, dvr_ch
     
     config = pd.read_csv('./config.txt')
+ ################################## 영업시간 설정 ##################################
+    open_t = (18,13)
+    close_t = (18,15)
 
     for i in config.index:
         dvr_num, dvr_ip, dvr_ch = get_dvr_info(i)
-        main = video_recode(dvr_num, dvr_ip, dvr_ch)
+        main = video_recode(dvr_num, dvr_ip, dvr_ch, open_t, close_t)
         main.start()
         time.sleep(5)
-        
