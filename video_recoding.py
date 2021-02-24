@@ -142,7 +142,7 @@ class video_recode(threading.Thread):
         self.width = int(cap.get(3))
         self.height = int(cap.get(4))
         self.fps = cap.get(cv2.CAP_PROP_FPS)
-        self.video_codec = cv2.VideoWriter_fourcc(*'DIVX')
+        self.video_codec = cv2.VideoWriter_fourcc(*'FFV1')
         
         ret, frame = cap.read()
         self.hei, self.wid, self.channel = frame.shape
@@ -166,12 +166,14 @@ class video_recode(threading.Thread):
     # 레코딩 설정 및 실행
     def recoding_video(self):
         # 영상 정보 설정 계정, 암호, 프레임 높이, 너비, 초당프레임, 코덱
+        print(self.wid, self.hei)
         blur_img = self.create_blur(self.hei, self. wid, self.channel)
         cap = cv2.VideoCapture(self.add)
         
         # 저장 파일 세팅
         v_file_name = str(self.log_time().strftime('%H%M'))
-        video_file = os.path.join(self.name, v_file_name + ".avi")
+        video_file = os.path.join(self.name, v_file_name + ".mkv")
+        print('make_file')
         video_writer = cv2.VideoWriter(video_file, self.video_codec, self.fps, (self.wid, self.hei))
         
         try:
@@ -196,7 +198,7 @@ class video_recode(threading.Thread):
                     # 녹화길이 설정 / 900frame 1분 / 15fps
                     if self.fr_count == 900:
                         v_file_name = self.log_time().strftime('%H%M')
-                        video_file = os.path.join(self.name, v_file_name + ".avi")
+                        video_file = os.path.join(self.name, v_file_name + ".mkv")
                         print("Capture video saved location : {}".format(video_file))
                         video_writer = cv2.VideoWriter(video_file, self.video_codec, self.fps, (self.wid, self.hei))
                         
@@ -264,7 +266,7 @@ class video_recode(threading.Thread):
                 print('wait working hour')
                 time.sleep(60)
         
- ################################## main ##################################            
+ ################################## main start ##################################            
 
 if __name__ == '__main__':
     
@@ -277,11 +279,18 @@ if __name__ == '__main__':
     
     config = pd.read_csv('./config.txt')
  ################################## 영업시간 설정 ##################################
-    open_t = (18,13)
-    close_t = (18,15)
-
+    open_t = (10,00)
+    close_t = (21,50)
+    
+    
     for i in config.index:
         dvr_num, dvr_ip, dvr_ch = get_dvr_info(i)
         main = video_recode(dvr_num, dvr_ip, dvr_ch, open_t, close_t)
         main.start()
         time.sleep(5)
+    '''        
+    dvr_num, dvr_ip, dvr_ch = get_dvr_info(1)
+    main = video_recode(dvr_num, dvr_ip, dvr_ch, open_t, close_t)
+    main.start()
+    time.sleep(5)
+    '''
