@@ -66,7 +66,7 @@ class sendtoserver(threading.Thread):
             print(int(year), int(month), int(day), int(hour), int(_min))
             
             create_time = datetime.datetime(int(year), int(month), int(day), int(hour), int(_min))
-            result = create_time + datetime.timedelta(seconds = 120)
+            result = create_time + datetime.timedelta(seconds = 1860)
             
             
             print(self.send_sig(result))

@@ -164,7 +164,7 @@ class video_recode(threading.Thread):
                 # 캡쳐 됨
                 if ret == True:
                                      
-                    if self.fr_count == self.fps * 60:
+                    if self.fr_count == self.fps * 1800:
                         v_file_name = self.get_file_name()
                         video_file = os.path.join(self.name, v_file_name + ".mkv")
                         print("Capture video saved location : {}".format(video_file))
