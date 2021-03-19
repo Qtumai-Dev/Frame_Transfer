@@ -40,7 +40,7 @@ class video_recoding(threading.Thread):
     
     def get_rtsp_addr(self):
         #rtsp://admin:qtumai123456@192.168.1.111:554/cam/realmonitor?channel=1
-        add = "\"rtsp://" + self.acc + ":" + self.pw  + "@" + self.ip + ":" + self.port + "/" + self.ch + "\""
+        add = "rtsp://" + self.acc + ":" + self.pw + "@" + self.ip + ":" + self.port + "/\"" + self.ch + "\""
         #add = 'rtsp://' + self.acc + ':' + self.pw + '@' + self.ip + '/' + self.ch
         return add
     
@@ -79,7 +79,7 @@ class video_recoding(threading.Thread):
                 file_name = self.get_file_name()
                 #rtsp://admin:qtumai123456@192.168.1.111:554/cam/realmonitor?channel=1: Invalid data found when processing input
                 #ffmpeg -y -hide_banner -rtsp_transport tcp -i rtsp://admin:qtumai123456@192.168.1.110:554/cam/realmonitor?channel=1&subtype=0 -t 1800 -an /home/pi/workspace/stream/save_video/20210313123108032940_JJIN-ch1_cam/realmonitor?channel=1&subtype=0.avi
-                cmd ="ffmpeg -y -hide_banner -rtsp_transport tcp -i %s -t 1800 -an %s/%s" %(add, save_path, file_name)
+                cmd ="ffmpeg -y -r 30 -stimeout 10000000 -hide_banner -rtsp_transport tcp -i %s -vcodec copy -t 1800 -an %s/%s" %(add, save_path, file_name)
                 print(cmd)
                 subprocess.check_output(cmd, shell=True, universal_newlines=True)
             else:
@@ -117,7 +117,7 @@ if __name__ == '__main__':
         shop_code, acc, pw, ip, port, ch = get_dvr_info(i)
         main = video_recoding(shop_code, acc, pw, ip, port, ch, open_t, close_t)
         main.start()
-        time.sleep(1)
+        time.sleep(0.01)
         
             
         
